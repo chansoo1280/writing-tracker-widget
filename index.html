@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Pink Writing Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+
+            background:
+                radial-gradient(#f5a9c7 1.5px, transparent 1.5px);
+            background-size: 14px 14px;
+            background-color: #fff0f6;
+
+            font-family: "Courier New", monospace;
+        }
+
+        .widget {
+            width: min(100%, 390px);
+
+            padding: 26px;
+
+            background: #fff8fb;
+
+            border: 4px solid #e879a5;
+            border-radius: 8px;
+
+            box-shadow: 8px 8px 0 #d85b8b;
+
+            color: #5d3a4a;
+        }
+
+        /* 장식 */
+        .decoration {
+            text-align: center;
+
+            color: #e879a5;
+
+            font-size: 13px;
+
+            letter-spacing: 5px;
+
+            margin-bottom: 12px;
+        }
+
+        /* 제목 */
+        .title {
+            text-align: center;
+
+            color: #d94f82;
+
+            font-size: 15px;
+            font-weight: bold;
+
+            letter-spacing: 4px;
+
+            margin-bottom: 18px;
+        }
+
+        /* =========================
+           오늘의 집필량
+        ========================= */
+
+        .today-section {
+            text-align: center;
+
+            padding-bottom: 22px;
+
+            border-bottom: 2px dashed #efb2c8;
+        }
+
+        .count {
+            font-size: 32px;
+            font-weight: bold;
+
+            color: #5d3a4a;
+        }
+
+        .goal {
+            margin-top: 7px;
+
+            color: #b97994;
+
+            font-size: 12px;
+        }
+
+        /* 도트 진행률 */
+        .progress-background {
+            display: flex;
+
+            gap: 3px;
+
+            width: 100%;
+            height: 18px;
+
+            margin-top: 20px;
+
+            overflow: hidden;
+        }
+
+        .dot {
+            flex: 1;
+
+            min-width: 5px;
+
+            background: #f6d6e2;
+
+            border: 1px solid #edb1c8;
+        }
+
+        .dot.active {
+            background: #e879a5;
+
+            border-color: #d85b8b;
+        }
+
+        /* 버튼 */
+        .buttons {
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 5px;
+
+            margin-top: 22px;
+        }
+
+        button {
+            min-height: 40px;
+
+            border: 2px solid #d85b8b;
+            border-radius: 5px;
+
+            background: #ffd9e7;
+
+            color: #a9436b;
+
+            font-family: "Courier New", monospace;
+
+            font-size: 10px;
+            font-weight: bold;
+
+            cursor: pointer;
+
+            box-shadow: 3px 3px 0 #d85b8b;
+        }
+
+        button:hover {
+            background: #ffc5da;
+        }
+
+        button:active {
+            transform: translate(3px, 3px);
+
+            box-shadow: 0 0 0 #d85b8b;
+        }
+
+        /* 정보 */
+        .info {
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 10px;
+
+            margin-top: 18px;
+
+            color: #a85c79;
+
+            font-size: 10px;
+        }
+
+        /* =========================
+           캘린더
+        ========================= */
+
+        .calendar-section {
+            padding-top: 22px;
+        }
+
+        .calendar-header {
+            display: flex;
+
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 16px;
+        }
+
+        .month-title {
+            color: #d94f82;
+
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .month-button {
+            min-height: 32px;
+
+            width: 32px;
+
+            padding: 0;
+
+            box-shadow: 2px 2px 0 #d85b8b;
+
+            font-size: 13px;
+        }
+
+        /* 요일 */
+        .weekdays,
+        .calendar-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(7, 1fr);
+
+            gap: 4px;
+        }
+
+        .weekday {
+            text-align: center;
+
+            padding-bottom: 5px;
+
+            color: #b97994;
+
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        /* 날짜 */
+        .day {
+            position: relative;
+
+            min-height: 42px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+            justify-content: center;
+
+            border: 1px solid #f0c2d3;
+
+            background: #fff;
+
+            color: #8b536b;
+
+            font-family: "Courier New", monospace;
+
+            font-size: 10px;
+
+            cursor: pointer;
+
+            box-shadow: none;
+
+            border-radius: 3px;
+        }
+
+        .day:hover {
+            background: #ffe8f0;
+        }
+
+        /* 빈 날짜 */
+        .day.empty {
+            border: none;
+
+            background: transparent;
+
+            cursor: default;
+        }
+
+        .day.empty:hover {
+            background: transparent;
+        }
+
+        /* 오늘 */
+        .day.today {
+            border: 2px solid #d94f82;
+
+            color: #d94f82;
+
+            font-weight: bold;
+        }
+
+        /* 목표 달성 */
+        .day.completed {
+            background: #ffd9e7;
+
+            border-color: #e879a5;
+
+            color: #a9436b;
+        }
+
+        .day.completed::after {
+            content: "♥";
+
+            position: absolute;
+
+            bottom: 2px;
+
+            color: #e879a5;
+
+            font-size: 8px;
+        }
+
+        /* 집필량 */
+        .day-amount {
+            margin-top: 3px;
+
+            color: #c15c84;
+
+            font-size: 7px;
+
+            white-space: nowrap;
+        }
+
+        /* =========================
+           월간 통계
+        ========================= */
+
+        .monthly-stats {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, 1fr);
+
+            gap: 8px;
+
+            margin-top: 18px;
+        }
+
+        .stat {
+            padding: 10px;
+
+            background: #fff0f6;
+
+            border: 1px solid #f0bfd1;
+
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #b97994;
+
+            font-size: 8px;
+        }
+
+        .stat-value {
+            margin-top: 5px;
+
+            color: #d94f82;
+
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 하단 */
+        .footer {
+            margin-top: 20px;
+
+            text-align: center;
+
+            color: #e879a5;
+
+            font-size: 10px;
+
+            letter-spacing: 2px;
+        }
+
+        /* 모바일 */
+        @media (max-width: 360px) {
+
+            .widget {
+                padding: 20px;
+            }
+
+            .count {
+                font-size: 27px;
+            }
+
+            .day {
+                min-height: 37px;
+            }
+
+            button {
+                font-size: 9px;
+            }
+        }
+
+    </style>
+</head>
+
+
+<body>
+
+<div class="widget">
+
+    <div class="decoration">
+        ✦ ♡ ✦
+    </div>
+
+    <div class="title">
+        WRITING TRACKER
+    </div>
+
+
+    <!-- =========================
+         오늘의 집필량
+    ========================== -->
+
+    <section class="today-section">
+
+        <div
+            class="count"
+            id="count"
+        >
+            2,350자
+        </div>
+
+        <div class="goal">
+            TODAY'S GOAL · 4,000자
+        </div>
+
+
+        <!-- 도트 진행률 -->
+
+        <div
+            class="progress-background"
+            id="progress"
+        ></div>
+
+
+        <!-- 글자 수 버튼 -->
+
+        <div class="buttons">
+
+            <button
+                type="button"
+                onclick="changeCount(-400)"
+            >
+                −400
+            </button>
+
+            <button
+                type="button"
+                onclick="changeCount(400)"
+            >
+                ＋400
+            </button>
+
+            <button
+                type="button"
+                onclick="changeCount(800)"
+            >
+                ＋800
+            </button>
+
+            <button
+                type="button"
+                onclick="changeCount(1000)"
+            >
+                ＋1000
+            </button>
+
+        </div>
+
+
+        <div class="info">
+
+            <div>
+                ♡ 3 DAY STREAK
+            </div>
+
+            <div id="exp">
+                ★ EXP +2350
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         캘린더
+    ========================== -->
+
+    <section class="calendar-section">
+
+        <div class="calendar-header">
+
+            <button
+                type="button"
+                class="month-button"
+                onclick="changeMonth(-1)"
+            >
+                ‹
+            </button>
+
+
+            <div
+                class="month-title"
+                id="monthTitle"
+            >
+                2026년 9월
+            </div>
+
+
+            <button
+                type="button"
+                class="month-button"
+                onclick="changeMonth(1)"
+            >
+                ›
+            </button>
+
+        </div>
+
+
+        <!-- 요일 -->
+
+        <div class="weekdays">
+
+            <div class="weekday">일</div>
+            <div class="weekday">월</div>
+            <div class="weekday">화</div>
+            <div class="weekday">수</div>
+            <div class="weekday">목</div>
+            <div class="weekday">금</div>
+            <div class="weekday">토</div>
+
+        </div>
+
+
+        <!-- 날짜 -->
+
+        <div
+            class="calendar-grid"
+            id="calendar"
+        ></div>
+
+
+        <!-- 월간 통계 -->
+
+        <div class="monthly-stats">
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    MONTHLY WORDS
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="monthlyWords"
+                >
+                    0자
+                </div>
+
+            </div>
+
+
+            <div class="stat">
+
+                <div class="stat-label">
+                    GOAL DAYS
+                </div>
+
+                <div
+                    class="stat-value"
+                    id="goalDays"
+                >
+                    0일
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="footer">
+        KEEP WRITING ♡
+    </div>
+
+</div>
+
+
+<script>
+
+    /* ==================================
+       기본 설정
+    ================================== */
+
+    let count = 2350;
+
+    const goal = 4000;
+
+
+    /*
+     * 날짜별 집필량
+     *
+     * 나중에 이 부분을
+     * Notion API 데이터로 교체할 예정.
+     */
+
+     let writingData =
+    JSON.parse(
+        localStorage.getItem("writingData")
+    ) || {};
+
+
+    /*
+     * 오늘 날짜
+     */
+
+    const today = new Date();
+
+    let calendarYear =
+        today.getFullYear();
+
+    let calendarMonth =
+        today.getMonth();
+
+
+    /* ==================================
+       오늘 글자 수
+    ================================== */
+
+    function changeCount(amount) {
+
+        count += amount;
+
+
+        if (count < 0) {
+            count = 0;
+        }
+
+
+        /*
+         * 오늘 날짜 키
+         */
+
+        const todayKey =
+            formatDate(
+                today.getFullYear(),
+                today.getMonth(),
+                today.getDate()
+            );
+
+
+        /*
+         * 오늘 기록 업데이트
+         */
+
+         writingData[todayKey] = count;
+
+localStorage.setItem(
+    "writingData",
+    JSON.stringify(writingData)
+);
+
+
+
+        updateToday();
+
+        renderCalendar();
+
+    }
+
+
+    /*
+     * 오늘 화면 업데이트
+     */
+
+    function updateToday() {
+
+        document
+            .getElementById("count")
+            .textContent =
+            count.toLocaleString() + "자";
+
+
+        document
+            .getElementById("exp")
+            .textContent =
+            "★ EXP +" + count;
+
+
+        createDots();
+
+    }
+
+
+    /* ==================================
+       도트 진행률
+    ================================== */
+
+    function createDots() {
+
+        const progress =
+            document.getElementById("progress");
+
+        progress.innerHTML = "";
+
+
+        const totalDots = 20;
+
+
+        const activeDots =
+            Math.floor(
+                Math.min(
+                    count / goal,
+                    1
+                ) * totalDots
+            );
+
+
+        for (
+            let i = 0;
+            i < totalDots;
+            i++
+        ) {
+
+            const dot =
+                document.createElement("div");
+
+            dot.classList.add("dot");
+
+
+            if (i < activeDots) {
+
+                dot.classList.add("active");
+
+            }
+
+
+            progress.appendChild(dot);
+
+        }
+
+    }
+
+
+    /* ==================================
+       날짜 포맷
+    ================================== */
+
+    function formatDate(
+        year,
+        month,
+        day
+    ) {
+
+        return (
+            year +
+            "-" +
+            String(month + 1).padStart(2, "0") +
+            "-" +
+            String(day).padStart(2, "0")
+        );
+
+    }
+
+
+    /* ==================================
+       캘린더 생성
+    ================================== */
+
+    function renderCalendar() {
+
+        const calendar =
+            document.getElementById(
+                "calendar"
+            );
+
+
+        calendar.innerHTML = "";
+
+
+        /*
+         * 현재 월의 첫 번째 요일
+         */
+
+        const firstDay =
+            new Date(
+                calendarYear,
+                calendarMonth,
+                1
+            ).getDay();
+
+
+        /*
+         * 현재 월의 마지막 날짜
+         */
+
+        const daysInMonth =
+            new Date(
+                calendarYear,
+                calendarMonth + 1,
+                0
+            ).getDate();
+
+
+        /*
+         * 제목
+         */
+
+        document
+            .getElementById("monthTitle")
+            .textContent =
+            calendarYear +
+            "년 " +
+            (calendarMonth + 1) +
+            "월";
+
+
+        /*
+         * 앞쪽 빈칸
+         */
+
+        for (
+            let i = 0;
+            i < firstDay;
+            i++
+        ) {
+
+            const empty =
+                document.createElement("div");
+
+            empty.className =
+                "day empty";
+
+            calendar.appendChild(empty);
+
+        }
+
+
+        /*
+         * 날짜 생성
+         */
+
+        for (
+            let day = 1;
+            day <= daysInMonth;
+            day++
+        ) {
+
+            const dateKey =
+                formatDate(
+                    calendarYear,
+                    calendarMonth,
+                    day
+                );
+
+
+            const amount =
+                writingData[dateKey] || 0;
+
+
+            const dayElement =
+                document.createElement("div");
+
+            dayElement.className =
+                "day";
+
+
+            /*
+             * 오늘인지 확인
+             */
+
+            if (
+                calendarYear ===
+                    today.getFullYear() &&
+
+                calendarMonth ===
+                    today.getMonth() &&
+
+                day ===
+                    today.getDate()
+            ) {
+
+                dayElement.classList.add(
+                    "today"
+                );
+
+            }
+
+
+            /*
+             * 목표 달성 여부
+             */
+
+            if (amount >= goal) {
+
+                dayElement.classList.add(
+                    "completed"
+                );
+
+            }
+
+
+            /*
+             * 날짜
+             */
+
+            const dayNumber =
+                document.createElement("div");
+
+            dayNumber.textContent =
+                day;
+
+
+            dayElement.appendChild(
+                dayNumber
+            );
+
+
+            /*
+             * 집필량 표시
+             */
+
+            if (amount > 0) {
+
+                const amountElement =
+                    document.createElement(
+                        "div"
+                    );
+
+                amountElement.className =
+                    "day-amount";
+
+
+                amountElement.textContent =
+                    formatShortAmount(
+                        amount
+                    );
+
+
+                dayElement.appendChild(
+                    amountElement
+                );
+
+            }
+
+
+            /*
+             * 날짜 클릭
+             */
+
+            dayElement.addEventListener(
+                "click",
+                function () {
+
+                    const currentAmount =
+                        writingData[dateKey] || 0;
+
+
+                    const input =
+                        prompt(
+                            day +
+                            "일 집필량을 입력하세요.",
+                            currentAmount
+                        );
+
+
+                    if (
+                        input === null
+                    ) {
+
+                        return;
+
+                    }
+
+
+                    const newAmount =
+                        Number(
+                            input
+                        );
+
+
+                    /*
+                     * 잘못된 값 방지
+                     */
+
+                    if (
+                        !Number.isFinite(
+                            newAmount
+                        ) ||
+                        newAmount < 0
+                    ) {
+
+                        alert(
+                            "0 이상의 숫자를 입력해주세요."
+                        );
+
+                        return;
+
+                    }
+
+
+                    writingData[dateKey] =
+    Math.floor(
+        newAmount
+    );
+
+localStorage.setItem(
+    "writingData",
+    JSON.stringify(writingData)
+);
+                        
+
+
+                    /*
+                     * 오늘을 수정했다면
+                     * 메인 숫자도 변경
+                     */
+
+                    if (
+                        dateKey ===
+                        formatDate(
+                            today.getFullYear(),
+                            today.getMonth(),
+                            today.getDate()
+                        )
+                    ) {
+
+                        count =
+                            writingData[
+                                dateKey
+                            ];
+
+                        updateToday();
+
+                    }
+
+
+                    renderCalendar();
+
+                }
+            );
+
+
+            calendar.appendChild(
+                dayElement
+            );
+
+        }
+
+
+        updateMonthlyStats();
+
+    }
+
+
+    /* ==================================
+       월 이동
+    ================================== */
+
+    function changeMonth(amount) {
+
+        calendarMonth += amount;
+
+
+        if (calendarMonth < 0) {
+
+            calendarMonth = 11;
+
+            calendarYear--;
+
+        }
+
+
+        if (calendarMonth > 11) {
+
+            calendarMonth = 0;
+
+            calendarYear++;
+
+        }
+
+
+        renderCalendar();
+
+    }
+
+
+    /* ==================================
+       짧은 글자 수 표시
+    ================================== */
+
+    function formatShortAmount(
+        amount
+    ) {
+
+        if (amount >= 10000) {
+
+            return (
+                (amount / 10000)
+                .toFixed(1)
+                .replace(".0", "") +
+                "만"
+            );
+
+        }
+
+
+        if (amount >= 1000) {
+
+            return (
+                (amount / 1000)
+                .toFixed(1)
+                .replace(".0", "") +
+                "k"
+            );
+
+        }
+
+
+        return amount;
+
+    }
+
+
+    /* ==================================
+       월간 통계
+    ================================== */
+
+    function updateMonthlyStats() {
+
+        let total = 0;
+
+        let goalCount = 0;
+
+
+        const daysInMonth =
+            new Date(
+                calendarYear,
+                calendarMonth + 1,
+                0
+            ).getDate();
+
+
+        for (
+            let day = 1;
+            day <= daysInMonth;
+            day++
+        ) {
+
+            const key =
+                formatDate(
+                    calendarYear,
+                    calendarMonth,
+                    day
+                );
+
+
+            const amount =
+                writingData[key] || 0;
+
+
+            total += amount;
+
+
+            if (amount >= goal) {
+
+                goalCount++;
+
+            }
+
+        }
+
+
+        document
+            .getElementById(
+                "monthlyWords"
+            )
+            .textContent =
+            total.toLocaleString() +
+            "자";
+
+
+        document
+            .getElementById(
+                "goalDays"
+            )
+            .textContent =
+            goalCount +
+            "일";
+
+    }
+
+  /* ==================================
+   오늘 기록 불러오기
+================================== */
+
+const todayKey =
+    formatDate(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+    );
+
+
+if (
+    writingData[todayKey] !== undefined
+) {
+
+    count =
+        writingData[todayKey];
+
+} else {
+
+    writingData[todayKey] =
+        count;
+
+    localStorage.setItem(
+        "writingData",
+        JSON.stringify(writingData)
+    );
+
+}
+
+
+/* ==================================
+   시작
+================================== */
+
+updateToday();
+
+renderCalendar();
+
+</script>
+
+</body>
+</html>
