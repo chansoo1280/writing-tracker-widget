@@ -1,1251 +1,1373 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Pink Writing Tracker</title>
-
-    <style>
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-
-            padding: 20px;
-
-            background:
-                radial-gradient(#f5a9c7 1.5px, transparent 1.5px);
-            background-size: 14px 14px;
-            background-color: #fff0f6;
-
-            font-family: "Courier New", monospace;
-        }
-
-        .widget {
-            width: min(100%, 390px);
-
-            padding: 26px;
-
-            background: #fff8fb;
-
-            border: 4px solid #e879a5;
-            border-radius: 8px;
-
-            box-shadow: 8px 8px 0 #d85b8b;
-
-            color: #5d3a4a;
-        }
-
-        /* 장식 */
-        .decoration {
-            text-align: center;
-
-            color: #e879a5;
-
-            font-size: 13px;
-
-            letter-spacing: 5px;
-
-            margin-bottom: 12px;
-        }
-
-        /* 제목 */
-        .title {
-            text-align: center;
-
-            color: #d94f82;
-
-            font-size: 15px;
-            font-weight: bold;
-
-            letter-spacing: 4px;
-
-            margin-bottom: 18px;
-        }
-
-        /* =========================
-           오늘의 집필량
-        ========================= */
-
-        .today-section {
-            text-align: center;
-
-            padding-bottom: 22px;
-
-            border-bottom: 2px dashed #efb2c8;
-        }
-
-        .count {
-            font-size: 32px;
-            font-weight: bold;
-
-            color: #5d3a4a;
-        }
-
-        .goal {
-            margin-top: 7px;
-
-            color: #b97994;
-
-            font-size: 12px;
-        }
-
-        /* 도트 진행률 */
-        .progress-background {
-            display: flex;
-
-            gap: 3px;
-
-            width: 100%;
-            height: 18px;
-
-            margin-top: 20px;
-
-            overflow: hidden;
-        }
-
-        .dot {
-            flex: 1;
-
-            min-width: 5px;
-
-            background: #f6d6e2;
-
-            border: 1px solid #edb1c8;
-        }
-
-        .dot.active {
-            background: #e879a5;
-
-            border-color: #d85b8b;
-        }
-
-        /* 버튼 */
-        .buttons {
-            display: grid;
-
-            grid-template-columns: repeat(4, 1fr);
-
-            gap: 5px;
-
-            margin-top: 22px;
-        }
-
-        button {
-            min-height: 40px;
-
-            border: 2px solid #d85b8b;
-            border-radius: 5px;
-
-            background: #ffd9e7;
-
-            color: #a9436b;
-
-            font-family: "Courier New", monospace;
-
-            font-size: 10px;
-            font-weight: bold;
-
-            cursor: pointer;
-
-            box-shadow: 3px 3px 0 #d85b8b;
-        }
-
-        button:hover {
-            background: #ffc5da;
-        }
-
-        button:active {
-            transform: translate(3px, 3px);
-
-            box-shadow: 0 0 0 #d85b8b;
-        }
-
-        /* 정보 */
-        .info {
-            display: flex;
-
-            justify-content: space-between;
-
-            gap: 10px;
-
-            margin-top: 18px;
-
-            color: #a85c79;
-
-            font-size: 10px;
-        }
-
-        /* =========================
-           캘린더
-        ========================= */
-
-        .calendar-section {
-            padding-top: 22px;
-        }
-
-        .calendar-header {
-            display: flex;
-
-            align-items: center;
-            justify-content: space-between;
-
-            margin-bottom: 16px;
-        }
-
-        .month-title {
-            color: #d94f82;
-
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        .month-button {
-            min-height: 32px;
-
-            width: 32px;
-
-            padding: 0;
-
-            box-shadow: 2px 2px 0 #d85b8b;
-
-            font-size: 13px;
-        }
-
-        /* 요일 */
-        .weekdays,
-        .calendar-grid {
-            display: grid;
-
-            grid-template-columns:
-                repeat(7, 1fr);
-
-            gap: 4px;
-        }
-
-        .weekday {
-            text-align: center;
-
-            padding-bottom: 5px;
-
-            color: #b97994;
-
-            font-size: 9px;
-            font-weight: bold;
-        }
-
-        /* 날짜 */
-        .day {
-            position: relative;
-
-            min-height: 42px;
-
-            display: flex;
-
-            flex-direction: column;
-
-            align-items: center;
-            justify-content: center;
-
-            border: 1px solid #f0c2d3;
-
-            background: #fff;
-
-            color: #8b536b;
-
-            font-family: "Courier New", monospace;
-
-            font-size: 10px;
-
-            cursor: pointer;
-
-            box-shadow: none;
-
-            border-radius: 3px;
-        }
-
-        .day:hover {
-            background: #ffe8f0;
-        }
-
-        /* 빈 날짜 */
-        .day.empty {
-            border: none;
-
-            background: transparent;
-
-            cursor: default;
-        }
-
-        .day.empty:hover {
-            background: transparent;
-        }
-
-        /* 오늘 */
-        .day.today {
-            border: 2px solid #d94f82;
-
-            color: #d94f82;
-
-            font-weight: bold;
-        }
-
-        /* 목표 달성 */
-        .day.completed {
-            background: #ffd9e7;
-
-            border-color: #e879a5;
-
-            color: #a9436b;
-        }
-
-        .day.completed::after {
-            content: "♥";
-
-            position: absolute;
-
-            bottom: 2px;
-
-            color: #e879a5;
-
-            font-size: 8px;
-        }
-
-        /* 집필량 */
-        .day-amount {
-            margin-top: 3px;
-
-            color: #c15c84;
-
-            font-size: 7px;
-
-            white-space: nowrap;
-        }
-
-        /* =========================
-           월간 통계
-        ========================= */
-
-        .monthly-stats {
-            display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
-            gap: 8px;
-
-            margin-top: 18px;
-        }
-
-        .stat {
-            padding: 10px;
-
-            background: #fff0f6;
-
-            border: 1px solid #f0bfd1;
-
-            text-align: center;
-        }
-
-        .stat-label {
-            color: #b97994;
-
-            font-size: 8px;
-        }
-
-        .stat-value {
-            margin-top: 5px;
-
-            color: #d94f82;
-
-            font-size: 14px;
-            font-weight: bold;
-        }
-
-        /* 하단 */
-        .footer {
-            margin-top: 20px;
-
-            text-align: center;
-
-            color: #e879a5;
-
-            font-size: 10px;
-
-            letter-spacing: 2px;
-        }
-
-        /* 모바일 */
-        @media (max-width: 360px) {
-
-            .widget {
-                padding: 20px;
-            }
-
-            .count {
-                font-size: 27px;
-            }
-
-            .day {
-                min-height: 37px;
-            }
-
-            button {
-                font-size: 9px;
-            }
-        }
-
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 레트로 픽셀 폰트 로드 -->
+<link href="https://fonts.googleapis.com/css2?family=DungGeunMo&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #fcf6f9;
+  --card-bg: #ffffff;
+  --card-border: #f0d8e2;
+  --point: #e89bb4;
+  --point-dark: #c4728d;
+  --accent: #b05a76;
+  --sub: #a38290;
+  --soft: #f7e6ed;
+  --soft-bg: #fff9fc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg);
+  font-family: 'DungGeunMo', monospace;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  color: var(--text);
+  padding: 20px 0;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+/* 📱 레트로 스마트폰 컨테이너 */
+.room-container {
+  background: var(--card-bg);
+  border: 4px solid var(--card-border);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  border-radius: 36px;
+  width: 380px;
+  padding: 38px 20px 30px 20px;
+  position: relative;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* 스마트폰 상단 스피커 & 카메라 장식 */
+.room-container::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 5px;
+  background: var(--card-border);
+  border-radius: 3px;
+}
+
+.room-container::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: calc(50% + 35px);
+  width: 5px;
+  height: 5px;
+  background: var(--card-border);
+  border-radius: 50%;
+}
+
+/* 헤더 (모바일 상태바 & 캡슐형 주소 스타일) */
+.room-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed var(--card-border);
+}
+
+.browser-btn {
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 50%;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.browser-btn:hover {
+  background: var(--soft);
+}
+
+/* 💊 캡슐형 주소바 스타일 */
+.url-bar {
+  background: var(--soft-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 180px;
+  overflow: hidden;
+}
+
+.url-icon {
+  font-size: 9px;
+  flex-shrink: 0;
+}
+
+.url-text {
+  font-size: 9px;
+  color: var(--accent);
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 🔋 내부에 숫자가 들어간 배터리 모양 뱃지 */
+.battery-badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.battery-body {
+  width: 32px;
+  height: 15px;
+  border: 1.5px solid var(--accent);
+  border-radius: 4px;
+  padding: 1px;
+  position: relative;
+  background: var(--soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.battery-fill {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  bottom: 1px;
+  width: 80%;
+  background: var(--point);
+  border-radius: 2px;
+  z-index: 1;
+}
+
+.battery-text {
+  position: relative;
+  z-index: 2;
+  font-size: 7px;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.battery-tip {
+  width: 2px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 0 2px 2px 0;
+}
+
+/* 🐾 CHARACTER BOX */
+.character-box {
+  background: var(--soft-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+  padding: 14px;
+}
+
+.character {
+  white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.3;
+  color: var(--accent);
+  text-align: center;
+}
+
+.character-message {
+  color: var(--accent);
+  margin-top: 8px;
+  font-size: 9px;
+  background: var(--card-bg);
+  padding: 3px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+}
+
+/* COUNT */
+.count-section {
+  text-align: center;
+  margin: 16px 0;
+  background: var(--soft-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.count {
+  font-size: 30px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.goal {
+  font-size: 9px;
+  color: var(--sub);
+  margin-top: 4px;
+}
+
+/* 🟩 PROGRESS BAR */
+.progress {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin: 12px 0;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+}
+
+.dot.active {
+  background: var(--point);
+  border-color: var(--point-dark);
+}
+
+/* 🕹️ WRITE BUTTONS */
+.buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 10px;
+}
+
+button {
+  font-family: 'DungGeunMo', monospace;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.write-btn {
+  padding: 8px 0;
+  border: 2px solid var(--card-border);
+  background: var(--soft);
+  color: var(--accent);
+  border-radius: 10px;
+  font-size: 11px;
+  transition: all 0.1s;
+}
+
+.write-btn:hover {
+  background: var(--point);
+  color: var(--card-bg);
+}
+
+.write-btn:active {
+  transform: scale(0.95);
+}
+
+/* INFO */
+.info {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 12px;
+  padding: 8px;
+  background: var(--soft-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 12px;
+  font-size: 10px;
+  color: var(--sub);
+}
+
+.info strong {
+  color: var(--accent);
+}
+
+/* CALENDAR */
+.calendar-section {
+  margin-top: 14px;
+  text-align: left;
+  background: var(--soft-bg);
+  border: 2px solid var(--card-border);
+  border-radius: 16px;
+  padding: 12px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.month-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+.month-btn {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 6px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.month-btn:hover {
+  background: var(--soft);
+}
+
+.weekdays,
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.weekdays div {
+  text-align: center;
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--sub);
+  padding-bottom: 4px;
+}
+
+.day {
+  min-height: 36px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  text-align: center;
+  padding: 2px 1px;
+  cursor: pointer;
+  font-size: 9px;
+  border-radius: 6px;
+  transition: 0.1s;
+}
+
+.day:hover {
+  background: var(--soft);
+}
+
+.day.today {
+  border: 2px solid var(--point-dark);
+  background: var(--soft-bg);
+}
+
+.day-number {
+  font-weight: bold;
+  color: var(--text);
+}
+
+.day-count {
+  margin-top: 1px;
+  font-size: 7px;
+  color: var(--sub);
+}
+
+.day.done {
+  background: var(--soft);
+  border-color: var(--point);
+}
+
+.day.done .day-count {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+/* MONTHLY STATS */
+.monthly-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.stat-box {
+  padding: 6px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.stat-label {
+  font-size: 8px;
+  color: var(--sub);
+}
+
+.stat-value {
+  margin-top: 2px;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent);
+}
+
+/* CUSTOMIZE BUTTON */
+.customize-btn {
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px;
+  border: 2px dashed var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 12px;
+  font-size: 10px;
+  transition: 0.1s;
+}
+
+.customize-btn:hover {
+  background: var(--soft-bg);
+  border-color: var(--point);
+}
+
+/* SETTINGS */
+.settings {
+  display: none;
+  margin-top: 12px;
+  padding: 12px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 16px;
+  text-align: left;
+}
+
+.settings.open {
+  display: block;
+}
+
+.settings-title {
+  text-align: center;
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--accent);
+  margin-bottom: 10px;
+  border-bottom: 2px dashed var(--card-border);
+  padding-bottom: 6px;
+}
+
+.setting-group {
+  margin-bottom: 10px;
+}
+
+.setting-label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 9px;
+  font-weight: bold;
+  color: var(--sub);
+}
+
+/* GOALS GRID (3개 나란히 배치) */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.goals-grid input {
+  width: 100%;
+  padding: 6px 4px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 8px;
+  font-family: 'DungGeunMo', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  text-align: center;
+  outline: none;
+}
+
+.goals-grid input:focus {
+  border-color: var(--point-dark);
+}
+
+/* INPUTS */
+.setting-group input[type="text"],
+.setting-group input[type="number"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 8px;
+  font-family: 'DungGeunMo', monospace;
+  font-size: 11px;
+  font-weight: bold;
+  outline: none;
+}
+
+.setting-group input[type="text"]:focus,
+.setting-group input[type="number"]:focus {
+  border-color: var(--point-dark);
+}
+
+/* QUICK BUTTONS EDITORS */
+.quick-btns-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.quick-btns-grid input {
+  text-align: center;
+  padding: 4px !important;
+  font-size: 10px !important;
+}
+
+/* CHARACTER SELECT */
+.character-select {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4px;
+}
+
+.character-choice {
+  padding: 6px 2px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 8px;
+  font-size: 9px;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: center;
+  font-family: 'DungGeunMo', monospace;
+  font-weight: bold;
+}
+
+.character-choice:hover {
+  background: var(--soft-bg);
+}
+
+.character-choice.selected {
+  background: var(--soft);
+  border-color: var(--point-dark);
+}
+
+/* TOGGLE */
+.toggle-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 5px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--accent);
+  border-radius: 8px;
+  font-size: 9px;
+}
+
+.toggle-btn.selected {
+  background: var(--soft);
+  border-color: var(--point-dark);
+}
+
+/* THEME SELECT */
+.theme-select {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+
+.theme-btn {
+  padding: 4px 2px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.theme-btn:hover {
+  background: var(--soft-bg);
+}
+
+.theme-btn.selected {
+  border-color: var(--point-dark);
+  background: var(--soft);
+}
+
+/* CUSTOM POINT COLOR */
+#pointColorInput {
+  width: 100%;
+  height: 28px;
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 2px;
+}
+
+/* SETTINGS BOTTOM */
+.settings-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.settings-bottom button {
+  padding: 6px;
+  font-size: 9px;
+  border-radius: 8px;
+}
+
+.reset-btn {
+  border: 2px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--sub);
+}
+
+.close-btn {
+  border: 2px solid var(--card-border);
+  background: var(--soft);
+  color: var(--accent);
+}
+
+/* FOOTER / HOME BAR */
+.footer {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 7px;
+  color: var(--sub);
+  position: relative;
+}
+
+.footer::before {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--card-border);
+  border-radius: 2px;
+  margin: 0 auto 8px auto;
+}
+</style>
 </head>
-
 
 <body>
 
-<div class="widget">
+<!-- 📱 스마트폰 형태 컨테이너 -->
+<div class="room-container">
 
-    <div class="decoration">
-        ✦ ♡ ✦
+  <!-- 세련된 모바일 상태바 스타일 헤더 -->
+  <div class="room-header">
+    <button class="browser-btn" onclick="location.reload()" title="홈 / 새로고침">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+    </button>
+    
+    <!-- 💊 캡슐형 주소 스타일 -->
+    <div class="url-bar">
+      <span class="url-icon">🔒</span>
+      <div id="urlText" class="url-text">writing.room/cozy</div>
     </div>
 
-    <div class="title">
-        WRITING TRACKER
+    <!-- 🔋 내부에 숫자가 들어간 배터리 모양 뱃지 -->
+    <div class="battery-badge">
+      <div class="battery-body">
+        <div class="battery-fill"></div>
+        <span class="battery-text">100</span>
+      </div>
+      <div class="battery-tip"></div>
+    </div>
+  </div>
+
+  <!-- CHARACTER -->
+  <div class="character-box">
+    <div id="character" class="character"></div>
+    <div id="characterMessage" class="character-message"></div>
+  </div>
+
+  <!-- COUNT -->
+  <div class="count-section">
+    <div id="count" class="count">0</div>
+    <div id="goalText" class="goal">GOAL 4,000 CHARACTERS</div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div id="progress" class="progress"></div>
+
+  <!-- WRITE BUTTONS -->
+  <div id="writeButtonsContainer" class="buttons"></div>
+
+  <!-- INFO -->
+  <div class="info">
+    <div>🔥 STREAK <strong id="streak">0</strong></div>
+    <div>⭐ EXP <strong id="exp">0</strong></div>
+  </div>
+
+  <!-- CALENDAR -->
+  <div id="calendarSection" class="calendar-section">
+
+    <div class="calendar-header">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <div id="monthTitle" class="month-title"></div>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
     </div>
 
+    <div class="weekdays">
+      <div>일</div>
+      <div>월</div>
+      <div>화</div>
+      <div>수</div>
+      <div>목</div>
+      <div>금</div>
+      <div>토</div>
+    </div>
 
-    <!-- =========================
-         오늘의 집필량
-    ========================== -->
+    <div id="calendar" class="calendar"></div>
 
-    <section class="today-section">
+    <div class="monthly-stats">
+      <div class="stat-box">
+        <div class="stat-label">WEEKLY WORDS</div>
+        <div id="weeklyWords" class="stat-value">0</div>
+      </div>
 
-        <div
-            class="count"
-            id="count"
+      <div class="stat-box">
+        <div class="stat-label">MONTHLY WORDS</div>
+        <div id="monthlyWords" class="stat-value">0</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CUSTOMIZE -->
+  <button id="customizeBtn" class="customize-btn" onclick="toggleSettings()">
+    ⚙ ROOM SETTINGS
+  </button>
+
+  <!-- SETTINGS -->
+  <div id="settings" class="settings">
+
+    <div class="settings-title">
+      ✦ ROOM SETTINGS ✦
+    </div>
+
+    <!-- ROOM PATH / NICKNAME -->
+    <div class="setting-group">
+      <span class="setting-label">ROOM PATH / NICKNAME</span>
+      <input 
+        id="roomPathInput" 
+        type="text" 
+        value="cozy" 
+        placeholder="cozy" 
+        oninput="setCustomRoomPath(this.value)"
+      >
+    </div>
+
+    <!-- GOALS SETTING (나란히 배치) -->
+    <div class="setting-group">
+      <span class="setting-label">GOALS (DAILY / WEEKLY / MONTHLY)</span>
+      <div class="goals-grid">
+        <input 
+          id="goalInput" 
+          type="number" 
+          value="4000" 
+          step="100" 
+          min="100" 
+          title="Daily Goal"
+          onchange="setCustomGoal(this.value)"
         >
-            2,350자
-        </div>
-
-        <div class="goal">
-            TODAY'S GOAL · 4,000자
-        </div>
-
-
-        <!-- 도트 진행률 -->
-
-        <div
-            class="progress-background"
-            id="progress"
-        ></div>
-
-
-        <!-- 글자 수 버튼 -->
-
-        <div class="buttons">
-
-            <button
-                type="button"
-                onclick="changeCount(-400)"
-            >
-                −400
-            </button>
-
-            <button
-                type="button"
-                onclick="changeCount(400)"
-            >
-                ＋400
-            </button>
-
-            <button
-                type="button"
-                onclick="changeCount(800)"
-            >
-                ＋800
-            </button>
-
-            <button
-                type="button"
-                onclick="changeCount(1000)"
-            >
-                ＋1000
-            </button>
-
-        </div>
-
-
-        <div class="info">
-
-            <div>
-                ♡ 3 DAY STREAK
-            </div>
-
-            <div id="exp">
-                ★ EXP +2350
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <!-- =========================
-         캘린더
-    ========================== -->
-
-    <section class="calendar-section">
-
-        <div class="calendar-header">
-
-            <button
-                type="button"
-                class="month-button"
-                onclick="changeMonth(-1)"
-            >
-                ‹
-            </button>
-
-
-            <div
-                class="month-title"
-                id="monthTitle"
-            >
-                2026년 9월
-            </div>
-
-
-            <button
-                type="button"
-                class="month-button"
-                onclick="changeMonth(1)"
-            >
-                ›
-            </button>
-
-        </div>
-
-
-        <!-- 요일 -->
-
-        <div class="weekdays">
-
-            <div class="weekday">일</div>
-            <div class="weekday">월</div>
-            <div class="weekday">화</div>
-            <div class="weekday">수</div>
-            <div class="weekday">목</div>
-            <div class="weekday">금</div>
-            <div class="weekday">토</div>
-
-        </div>
-
-
-        <!-- 날짜 -->
-
-        <div
-            class="calendar-grid"
-            id="calendar"
-        ></div>
-
-
-        <!-- 월간 통계 -->
-
-        <div class="monthly-stats">
-
-            <div class="stat">
-
-                <div class="stat-label">
-                    MONTHLY WORDS
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="monthlyWords"
-                >
-                    0자
-                </div>
-
-            </div>
-
-
-            <div class="stat">
-
-                <div class="stat-label">
-                    GOAL DAYS
-                </div>
-
-                <div
-                    class="stat-value"
-                    id="goalDays"
-                >
-                    0일
-                </div>
-
-            </div>
-
-        </div>
-
-    </section>
-
-
-    <div class="footer">
-        KEEP WRITING ♡
+        <input 
+          id="weeklyGoalInput" 
+          type="number" 
+          value="28000" 
+          step="1000" 
+          min="100" 
+          title="Weekly Goal"
+          onchange="setCustomWeeklyGoal(this.value)"
+        >
+        <input 
+          id="monthlyGoalInput" 
+          type="number" 
+          value="120000" 
+          step="5000" 
+          min="100" 
+          title="Monthly Goal"
+          onchange="setCustomMonthlyGoal(this.value)"
+        >
+      </div>
     </div>
+
+    <!-- QUICK WRITE BUTTONS CONFIG -->
+    <div class="setting-group">
+      <span class="setting-label">QUICK BUTTONS (- / + / + / +)</span>
+      <div class="quick-btns-grid">
+        <input id="qBtn0" type="number" step="50" onchange="updateQuickButtonsFromSettings()">
+        <input id="qBtn1" type="number" step="50" onchange="updateQuickButtonsFromSettings()">
+        <input id="qBtn2" type="number" step="50" onchange="updateQuickButtonsFromSettings()">
+        <input id="qBtn3" type="number" step="50" onchange="updateQuickButtonsFromSettings()">
+      </div>
+    </div>
+
+    <!-- CHARACTER -->
+    <div class="setting-group">
+      <span class="setting-label">CHARACTER</span>
+      <div class="character-select">
+        <button id="char-hamster" class="character-choice" onclick="selectCharacter('hamster')">HAMSTER</button>
+        <button id="char-cat" class="character-choice" onclick="selectCharacter('cat')">CAT</button>
+        <button id="char-rabbit" class="character-choice" onclick="selectCharacter('rabbit')">RABBIT</button>
+        <button id="char-bear" class="character-choice" onclick="selectCharacter('bear')">BEAR</button>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="setting-group">
+      <span class="setting-label">CALENDAR</span>
+      <div class="toggle-buttons">
+        <button id="calendarOn" class="toggle-btn" onclick="setCalendarVisible(true)">ON</button>
+        <button id="calendarOff" class="toggle-btn" onclick="setCalendarVisible(false)">OFF</button>
+      </div>
+    </div>
+
+    <!-- THEME -->
+    <div class="setting-group">
+      <span class="setting-label">ROOM VIBE</span>
+      <div class="theme-select">
+        <button class="theme-btn" onclick="setTheme('pink')">🌸</button>
+        <button class="theme-btn" onclick="setTheme('lavender')">💜</button>
+        <button class="theme-btn" onclick="setTheme('blue')">💙</button>
+        <button class="theme-btn" onclick="setTheme('mint')">🌿</button>
+        <button class="theme-btn" onclick="setTheme('cream')">🥐</button>
+        <button class="theme-btn" onclick="setTheme('black')">🖤</button>
+      </div>
+    </div>
+  
+    <!-- CUSTOM POINT COLOR -->
+    <div class="setting-group">
+      <span class="setting-label">ACCENT COLOR</span>
+      <input
+        id="pointColorInput"
+        type="color"
+        value="#e89bb4"
+        onchange="setCustomPointColor(this.value)"
+      >
+    </div>
+
+    <!-- SETTINGS BOTTOM -->
+    <div class="settings-bottom">
+      <button class="reset-btn" onclick="resetSettings()">DEFAULT</button>
+      <button class="close-btn" onclick="toggleSettings()">CLOSE</button>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    click a calendar date to edit ✦
+  </div>
 
 </div>
 
-
 <script>
+    let goal = parseInt(localStorage.getItem("dailyGoal")) || 4000;
+    let weeklyGoal = parseInt(localStorage.getItem("weeklyGoal")) || 28000;
+    let monthlyGoal = parseInt(localStorage.getItem("monthlyGoal")) || 120000;
+    let roomPath = localStorage.getItem("roomPath") || "cozy";
+    
+    // 첫 번째는 마이너스(-), 두번째부터는 플러스(+) 기준값
+    let quickButtonValues = JSON.parse(localStorage.getItem("quickButtonValues")) || [-400, 400, 800, 1000];
+    
+    const themes = {
+      pink: { bg: "#fcf6f9", cardBg: "#ffffff", cardBorder: "#f0d8e2", soft: "#f7e6ed", softBg: "#fff9fc", text: "#5a404c", sub: "#a38290" },
+      lavender: { bg: "#f7f5fc", cardBg: "#ffffff", cardBorder: "#e2dcf2", soft: "#eee8fc", softBg: "#faf8ff", text: "#464259", sub: "#8a83a3" },
+      blue: { bg: "#f4f8fb", cardBg: "#ffffff", cardBorder: "#d6e5ef", soft: "#e6f1f8", softBg: "#fafcfd", text: "#3d4e5a", sub: "#7c93a4" },
+      mint: { bg: "#f4faf7", cardBg: "#ffffff", cardBorder: "#d2ebd9", soft: "#e2f5e8", softBg: "#fafefc", text: "#3d5247", sub: "#799e8b" },
+      cream: { bg: "#faf7f2", cardBg: "#ffffff", cardBorder: "#f0e2cc", soft: "#faebd0", softBg: "#fffdf9", text: "#534a3d", sub: "#9e9079" },
+      black: { bg: "#1a1a1c", cardBg: "#242428", cardBorder: "#3a3a42", soft: "#2e2e36", softBg: "#2a2a30", text: "#e2e2e8", sub: "#9a9aa4" }
+    };
+    
+    let selectedTheme = localStorage.getItem("selectedTheme") || "pink";
+    let customPoint = localStorage.getItem("customPoint") || "";
+    
+    function applyTheme(themeName, customHex = null) {
+      const theme = themes[themeName] || themes["pink"];
+      const root = document.documentElement;
+    
+      root.style.setProperty("--bg", theme.bg);
+      root.style.setProperty("--card-bg", theme.cardBg);
+      root.style.setProperty("--card-border", theme.cardBorder);
+      root.style.setProperty("--soft", theme.soft);
+      root.style.setProperty("--soft-bg", theme.softBg);
+      root.style.setProperty("--text", theme.text);
+      root.style.setProperty("--sub", theme.sub);
+    
+      let pointColor = customHex;
+      if (!pointColor) {
+        const defaultPoints = {
+          pink: "#e89bb4",
+          lavender: "#b29ee8",
+          blue: "#82bde8",
+          mint: "#82d0af",
+          cream: "#e0be82",
+          black: "#8499b1"
+        };
+        pointColor = defaultPoints[themeName] || "#e89bb4";
+      }
+    
+      const hex = pointColor.replace("#", "");
+      const r = parseInt(hex.substring(0, 2), 16) || 0;
+      const g = parseInt(hex.substring(2, 4), 16) || 0;
+      const b = parseInt(hex.substring(4, 6), 16) || 0;
+    
+      let darkR = Math.round(r * 0.75);
+      let darkG = Math.round(g * 0.75);
+      let darkB = Math.round(b * 0.75);
+      if (themeName === 'black' && !customHex) {
+        darkR = 132; darkG = 153; darkB = 177;
+      }
+      const darkHex = "#" + [darkR, darkG, darkB].map(v => v.toString(16).padStart(2, "0")).join("");
+    
+      root.style.setProperty("--point", pointColor);
+      root.style.setProperty("--point-dark", darkHex);
+      root.style.setProperty("--accent", themeName === 'black' && !customHex ? "#9ab1cb" : darkHex);
+    
+      selectedTheme = themeName;
+      localStorage.setItem("selectedTheme", themeName);
+      
+      const pointInput = document.getElementById("pointColorInput");
+      if(pointInput) pointInput.value = pointColor;
+    }
+    
+    function setTheme(themeName) {
+      customPoint = "";
+      localStorage.removeItem("customPoint");
+      applyTheme(themeName);
+      updateThemeButtons();
+    }
+    
+    function setCustomPointColor(color) {
+      customPoint = color;
+      localStorage.setItem("customPoint", color);
+      applyTheme(selectedTheme, color);
+    }
+    
+    function updateThemeButtons() {
+      const buttons = document.querySelectorAll(".theme-btn");
+      const themeNames = ["pink", "lavender", "blue", "mint", "cream", "black"];
+      buttons.forEach((button, index) => {
+        button.classList.toggle("selected", themeNames[index] === selectedTheme);
+      });
+    }
 
-    /* ==================================
-       기본 설정
-    ================================== */
+    function setCustomRoomPath(val) {
+      roomPath = val.trim() !== "" ? val.trim() : "cozy";
+      localStorage.setItem("roomPath", roomPath);
+      document.getElementById("urlText").textContent = `writing.room/${roomPath}`;
+    }
 
-    let count = 2350;
+    function renderQuickButtons() {
+      const container = document.getElementById("writeButtonsContainer");
+      container.innerHTML = "";
+      
+      quickButtonValues.forEach((val, index) => {
+        const btn = document.createElement("button");
+        btn.className = "write-btn";
+        if (index === 0) {
+          const absVal = Math.abs(val);
+          val = -absVal;
+          btn.textContent = val;
+        } else {
+          const absVal = Math.abs(val);
+          val = absVal;
+          btn.textContent = "+" + val;
+        }
+        
+        btn.onclick = function() {
+          changeCount(val);
+        };
+        container.appendChild(btn);
+      });
 
-    const goal = 4000;
+      for (let i = 0; i < 4; i++) {
+        const input = document.getElementById("qBtn" + i);
+        if (input) {
+          input.value = (i === 0 ? -Math.abs(quickButtonValues[i]) : Math.abs(quickButtonValues[i]));
+        }
+      }
+    }
 
+    function updateQuickButtonsFromSettings() {
+      const newVals = [];
+      for (let i = 0; i < 4; i++) {
+        const input = document.getElementById("qBtn" + i);
+        const parsed = parseInt(input.value, 10);
+        if (isNaN(parsed)) {
+          alert("올바른 숫자를 입력해주세요.");
+          return;
+        }
+        newVals.push(parsed);
+      }
 
-    /*
-     * 날짜별 집필량
-     *
-     * 나중에 이 부분을
-     * Notion API 데이터로 교체할 예정.
-     */
+      quickButtonValues = [
+        -Math.abs(newVals[0]),
+        Math.abs(newVals[1]),
+        Math.abs(newVals[2]),
+        Math.abs(newVals[3])
+      ];
 
-     let writingData =
-    JSON.parse(
-        localStorage.getItem("writingData")
-    ) || {};
+      localStorage.setItem("quickButtonValues", JSON.stringify(quickButtonValues));
+      renderQuickButtons();
+    }
 
+    function setCustomGoal(val) {
+      const parsed = parseInt(val, 10);
+      if (isNaN(parsed) || parsed < 100) {
+        alert("100 이상의 올바른 숫자를 입력해주세요.");
+        document.getElementById("goalInput").value = goal;
+        return;
+      }
+      goal = parsed;
+      localStorage.setItem("dailyGoal", goal);
+      updateToday();
+      renderCalendar();
+    }
 
-    /*
-     * 오늘 날짜
-     */
+    function setCustomWeeklyGoal(val) {
+      const parsed = parseInt(val, 10);
+      if (isNaN(parsed) || parsed < 100) {
+        alert("100 이상의 올바른 숫자를 입력해주세요.");
+        document.getElementById("weeklyGoalInput").value = weeklyGoal;
+        return;
+      }
+      weeklyGoal = parsed;
+      localStorage.setItem("weeklyGoal", weeklyGoal);
+      renderCalendar();
+    }
 
+    function setCustomMonthlyGoal(val) {
+      const parsed = parseInt(val, 10);
+      if (isNaN(parsed) || parsed < 100) {
+        alert("100 이상의 올바른 숫자를 입력해주세요.");
+        document.getElementById("monthlyGoalInput").value = monthlyGoal;
+        return;
+      }
+      monthlyGoal = parsed;
+      localStorage.setItem("monthlyGoal", monthlyGoal);
+      renderCalendar();
+    }
+    
+    let writingData = JSON.parse(localStorage.getItem("writingData")) || {};
+    let selectedCharacter = localStorage.getItem("selectedCharacter") || "hamster";
+    let calendarVisible = localStorage.getItem("calendarVisible") !== "false";
+    
     const today = new Date();
-
-    let calendarYear =
-        today.getFullYear();
-
-    let calendarMonth =
-        today.getMonth();
-
-
-    /* ==================================
-       오늘 글자 수
-    ================================== */
-
+    const todayKey = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+    
+    if (writingData[todayKey] === undefined) {
+      writingData[todayKey] = 0;
+      saveData();
+    }
+    
+    let count = writingData[todayKey];
+    
+    const characters = {
+      hamster: {
+        stages: [
+          `૮₍ ˶ᵔ ᵕ ᵔ˶ ₎ა\n💻\n딸깍...`,
+          `૮₍ •̀ ᴗ •́ ₎ა\n💻\n타닥타닥!`,
+          `૮₍ 🔥•̀ ᴗ •́🔥 ₎ა\n💻💨\n타다다다닥!!`,
+          `૮₍🔥🔥•̀ ᴗ •́🔥🔥₎ა\n💻💥\n타다다다다다다닥!!!`
+        ],
+        complete: `૮₍ ˶ᵔ ᵕ ᔆ˶ ₎ა\n💻✨\n🎉 목표 달성!`
+      },
+      cat: {
+        stages: [
+          `(=^･ω･^=)\n💻\n냥...`,
+          `(=^•ω•^=)\n💻\n타닥타닥!`,
+          `(=^🔥ω🔥^=)\n💻💨\n타다다다닥!!`,
+          `(=^🔥ω🔥^=)🔥\n💻💥\n타다다다닥!!!`
+        ],
+        complete: `(=^･ω･^=)ﾉ\n💻✨\n🎉 목표 달성!`
+      },
+      rabbit: {
+        stages: [
+          `(\\_/)\n( • ᴗ • )\n💻\n끄적...`,
+          `(\\_/)\n( •̀ ᴗ •́ )\n💻\n타닥타닥!`,
+          `(\\_/)\n( 🔥ᴗ🔥 )\n💻💨\n타다다다닥!!`,
+          `(\\_/)\n(🔥•̀ ᴗ •́🔥)\n💻💥\n타다다다다다닥!!!`
+        ],
+        complete: `(\\_/)\n( ˶ᵔ ᵕ ᵔ˶ )\n💻✨\n🎉 목표 달성!`
+      },
+      bear: {
+        stages: [
+          `ʕ•ᴥ•ʔ\n💻\n끄적...`,
+          `ʕ•̀ᴥ•́ʔ\n💻\n타닥타닥!`,
+          `ʕ🔥•̀ᴥ•́🔥ʔ\n💻💨\n타다다다닥!!`,
+          `ʕ🔥🔥•̀ᴥ•́🔥🔥ʔ\n💻💥\n타다다다다다닥!!!`
+        ],
+        complete: `ʕ ˶ᵔᴥᵔ˶ ʔ\n💻✨\n🎉 목표 달성!`
+      }
+    };
+    
+    function getCharacterStage() {
+      const ratio = count / goal;
+      if (ratio < 0.25) return 0;
+      if (ratio < 0.50) return 1;
+      if (ratio < 0.75) return 2;
+      if (ratio < 1.00) return 3;
+      return 4;
+    }
+    
+    function updateCharacter() {
+      const character = document.getElementById("character");
+      const message = document.getElementById("characterMessage");
+      const data = characters[selectedCharacter];
+      const stage = getCharacterStage();
+    
+      if (stage >= 4) {
+        character.textContent = data.complete;
+        message.textContent = "오늘도 해냈다! ✦";
+      } else {
+        character.textContent = data.stages[stage];
+        message.textContent = stage === 0 ? "천천히 시작해보자." : stage === 1 ? "좋아, 흐름을 타고 있어!" : stage === 2 ? "점점 빨라지고 있다!" : "🔥 멈출 수 없다!";
+      }
+    }
+    
+    function selectCharacter(character) {
+      selectedCharacter = character;
+      localStorage.setItem("selectedCharacter", character);
+      document.querySelectorAll(".character-choice").forEach(button => {
+        button.classList.remove("selected");
+      });
+      const selectedButton = document.getElementById("char-" + character);
+      if (selectedButton) {
+        selectedButton.classList.add("selected");
+      }
+      updateCharacter();
+    }
+    
     function changeCount(amount) {
-
-        count += amount;
-
-
-        if (count < 0) {
-            count = 0;
-        }
-
-
-        /*
-         * 오늘 날짜 키
-         */
-
-        const todayKey =
-            formatDate(
-                today.getFullYear(),
-                today.getMonth(),
-                today.getDate()
-            );
-
-
-        /*
-         * 오늘 기록 업데이트
-         */
-
-         writingData[todayKey] = count;
-
-localStorage.setItem(
-    "writingData",
-    JSON.stringify(writingData)
-);
-
-
-
-        updateToday();
-
-        renderCalendar();
-
+      count += amount;
+      if (count < 0) {
+        count = 0;
+      }
+      writingData[todayKey] = count;
+      saveData();
+      updateToday();
+      renderCalendar();
     }
-
-
-    /*
-     * 오늘 화면 업데이트
-     */
-
+    
     function updateToday() {
-
-        document
-            .getElementById("count")
-            .textContent =
-            count.toLocaleString() + "자";
-
-
-        document
-            .getElementById("exp")
-            .textContent =
-            "★ EXP +" + count;
-
-
-        createDots();
-
+      document.getElementById("count").textContent = count.toLocaleString();
+      document.getElementById("goalText").textContent = `GOAL ${goal.toLocaleString()} CHARACTERS`;
+      
+      const goalInput = document.getElementById("goalInput");
+      if (goalInput) goalInput.value = goal;
+      const weeklyGoalInput = document.getElementById("weeklyGoalInput");
+      if (weeklyGoalInput) weeklyGoalInput.value = weeklyGoal;
+      const monthlyGoalInput = document.getElementById("monthlyGoalInput");
+      if (monthlyGoalInput) monthlyGoalInput.value = monthlyGoal;
+      
+      const roomPathInput = document.getElementById("roomPathInput");
+      if (roomPathInput) roomPathInput.value = roomPath;
+      document.getElementById("urlText").textContent = `writing.room/${roomPath}`;
+      
+      updateProgress();
+      updateCharacter();
+      updateStats();
     }
-
-
-    /* ==================================
-       도트 진행률
-    ================================== */
-
-    function createDots() {
-
-        const progress =
-            document.getElementById("progress");
-
-        progress.innerHTML = "";
-
-
-        const totalDots = 20;
-
-
-        const activeDots =
-            Math.floor(
-                Math.min(
-                    count / goal,
-                    1
-                ) * totalDots
-            );
-
-
-        for (
-            let i = 0;
-            i < totalDots;
-            i++
-        ) {
-
-            const dot =
-                document.createElement("div");
-
-            dot.classList.add("dot");
-
-
-            if (i < activeDots) {
-
-                dot.classList.add("active");
-
-            }
-
-
-            progress.appendChild(dot);
-
+    
+    function updateProgress() {
+      const progress = document.getElementById("progress");
+      progress.innerHTML = "";
+      const totalDots = 10;
+      const percent = Math.min(count / goal, 1);
+      const activeDots = Math.floor(percent * totalDots);
+    
+      for (let i = 0; i < totalDots; i++) {
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        if (i < activeDots) {
+          dot.classList.add("active");
         }
-
+        progress.appendChild(dot);
+      }
     }
-
-
-    /* ==================================
-       날짜 포맷
-    ================================== */
-
-    function formatDate(
-        year,
-        month,
-        day
-    ) {
-
-        return (
-            year +
-            "-" +
-            String(month + 1).padStart(2, "0") +
-            "-" +
-            String(day).padStart(2, "0")
-        );
-
-    }
-
-
-    /* ==================================
-       캘린더 생성
-    ================================== */
-
-    function renderCalendar() {
-
-        const calendar =
-            document.getElementById(
-                "calendar"
-            );
-
-
-        calendar.innerHTML = "";
-
-
-        /*
-         * 현재 월의 첫 번째 요일
-         */
-
-        const firstDay =
-            new Date(
-                calendarYear,
-                calendarMonth,
-                1
-            ).getDay();
-
-
-        /*
-         * 현재 월의 마지막 날짜
-         */
-
-        const daysInMonth =
-            new Date(
-                calendarYear,
-                calendarMonth + 1,
-                0
-            ).getDate();
-
-
-        /*
-         * 제목
-         */
-
-        document
-            .getElementById("monthTitle")
-            .textContent =
-            calendarYear +
-            "년 " +
-            (calendarMonth + 1) +
-            "월";
-
-
-        /*
-         * 앞쪽 빈칸
-         */
-
-        for (
-            let i = 0;
-            i < firstDay;
-            i++
-        ) {
-
-            const empty =
-                document.createElement("div");
-
-            empty.className =
-                "day empty";
-
-            calendar.appendChild(empty);
-
+    
+    function calculateStreak() {
+      let streak = 0;
+      const date = new Date();
+      while (true) {
+        const key = date.getFullYear() + "-" + String(date.getMonth() + 1).padStart(2, "0") + "-" + String(date.getDate()).padStart(2, "0");
+        if (writingData[key] !== undefined && writingData[key] >= goal) {
+          streak++;
+          date.setDate(date.getDate() - 1);
+        } else {
+          break;
         }
-
-
-        /*
-         * 날짜 생성
-         */
-
-        for (
-            let day = 1;
-            day <= daysInMonth;
-            day++
-        ) {
-
-            const dateKey =
-                formatDate(
-                    calendarYear,
-                    calendarMonth,
-                    day
-                );
-
-
-            const amount =
-                writingData[dateKey] || 0;
-
-
-            const dayElement =
-                document.createElement("div");
-
-            dayElement.className =
-                "day";
-
-
-            /*
-             * 오늘인지 확인
-             */
-
-            if (
-                calendarYear ===
-                    today.getFullYear() &&
-
-                calendarMonth ===
-                    today.getMonth() &&
-
-                day ===
-                    today.getDate()
-            ) {
-
-                dayElement.classList.add(
-                    "today"
-                );
-
-            }
-
-
-            /*
-             * 목표 달성 여부
-             */
-
-            if (amount >= goal) {
-
-                dayElement.classList.add(
-                    "completed"
-                );
-
-            }
-
-
-            /*
-             * 날짜
-             */
-
-            const dayNumber =
-                document.createElement("div");
-
-            dayNumber.textContent =
-                day;
-
-
-            dayElement.appendChild(
-                dayNumber
-            );
-
-
-            /*
-             * 집필량 표시
-             */
-
-            if (amount > 0) {
-
-                const amountElement =
-                    document.createElement(
-                        "div"
-                    );
-
-                amountElement.className =
-                    "day-amount";
-
-
-                amountElement.textContent =
-                    formatShortAmount(
-                        amount
-                    );
-
-
-                dayElement.appendChild(
-                    amountElement
-                );
-
-            }
-
-
-            /*
-             * 날짜 클릭
-             */
-
-            dayElement.addEventListener(
-                "click",
-                function () {
-
-                    const currentAmount =
-                        writingData[dateKey] || 0;
-
-
-                    const input =
-                        prompt(
-                            day +
-                            "일 집필량을 입력하세요.",
-                            currentAmount
-                        );
-
-
-                    if (
-                        input === null
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    const newAmount =
-                        Number(
-                            input
-                        );
-
-
-                    /*
-                     * 잘못된 값 방지
-                     */
-
-                    if (
-                        !Number.isFinite(
-                            newAmount
-                        ) ||
-                        newAmount < 0
-                    ) {
-
-                        alert(
-                            "0 이상의 숫자를 입력해주세요."
-                        );
-
-                        return;
-
-                    }
-
-
-                    writingData[dateKey] =
-    Math.floor(
-        newAmount
-    );
-
-localStorage.setItem(
-    "writingData",
-    JSON.stringify(writingData)
-);
-                        
-
-
-                    /*
-                     * 오늘을 수정했다면
-                     * 메인 숫자도 변경
-                     */
-
-                    if (
-                        dateKey ===
-                        formatDate(
-                            today.getFullYear(),
-                            today.getMonth(),
-                            today.getDate()
-                        )
-                    ) {
-
-                        count =
-                            writingData[
-                                dateKey
-                            ];
-
-                        updateToday();
-
-                    }
-
-
-                    renderCalendar();
-
-                }
-            );
-
-
-            calendar.appendChild(
-                dayElement
-            );
-
-        }
-
-
-        updateMonthlyStats();
-
+      }
+      return streak;
     }
-
-
-    /* ==================================
-       월 이동
-    ================================== */
-
+    
+    function updateStats() {
+      const streak = calculateStreak();
+      document.getElementById("streak").textContent = streak;
+      document.getElementById("exp").textContent = Math.floor(count / 100);
+    }
+    
+    let calendarDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    
     function changeMonth(amount) {
+      calendarDate.setMonth(calendarDate.getMonth() + amount);
+      renderCalendar();
+    }
+    
+    function renderCalendar() {
+      const calendar = document.getElementById("calendar");
+      const monthTitle = document.getElementById("monthTitle");
+      calendar.innerHTML = "";
+    
+      const year = calendarDate.getFullYear();
+      const month = calendarDate.getMonth();
+      monthTitle.textContent = `${year}.${String(month + 1).padStart(2, "0")}`;
+    
+      const firstDay = new Date(year, month, 1).getDay();
+      const lastDate = new Date(year, month + 1, 0).getDate();
+    
+      for (let i = 0; i < firstDay; i++) {
+        const blank = document.createElement("div");
+        calendar.appendChild(blank);
+      }
+    
+      let monthlyWords = 0;
+      let weeklyWords = 0;
+      
+      const currDate = new Date();
+      const currentDayOfWeek = currDate.getDay();
+      const startOfWeek = new Date(currDate);
+      startOfWeek.setDate(currDate.getDate() - currentDayOfWeek);
 
-        calendarMonth += amount;
+      for (let day = 1; day <= lastDate; day++) {
+        const key = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        const value = writingData[key] || 0;
+        monthlyWords += value;
 
-
-        if (calendarMonth < 0) {
-
-            calendarMonth = 11;
-
-            calendarYear--;
-
+        const loopDate = new Date(year, month, day);
+        if (loopDate >= startOfWeek && loopDate <= currDate) {
+          weeklyWords += value;
         }
-
-
-        if (calendarMonth > 11) {
-
-            calendarMonth = 0;
-
-            calendarYear++;
-
+    
+        const cell = document.createElement("div");
+        cell.className = "day";
+        if (key === todayKey) {
+          cell.classList.add("today");
         }
-
-
-        renderCalendar();
-
+        if (value >= goal) {
+          cell.classList.add("done");
+        }
+    
+        cell.innerHTML = `
+          <div class="day-number">${day}</div>
+          <div class="day-count">
+            ${value > 0 ? value.toLocaleString() : ""}
+            ${value >= goal ? "♥" : ""}
+          </div>
+        `;
+    
+        cell.onclick = function() {
+          editDayCount(key);
+        };
+        calendar.appendChild(cell);
+      }
+    
+      document.getElementById("weeklyWords").textContent = `${weeklyWords.toLocaleString()} / ${weeklyGoal.toLocaleString()}`;
+      document.getElementById("monthlyWords").textContent = `${monthlyWords.toLocaleString()} / ${monthlyGoal.toLocaleString()}`;
     }
 
-
-    /* ==================================
-       짧은 글자 수 표시
-    ================================== */
-
-    function formatShortAmount(
-        amount
-    ) {
-
-        if (amount >= 10000) {
-
-            return (
-                (amount / 10000)
-                .toFixed(1)
-                .replace(".0", "") +
-                "만"
-            );
-
+    function editDayCount(key) {
+      const currentVal = writingData[key] || 0;
+      const input = prompt(`[${key}] 날짜의 글자 수를 입력해주세요:`, currentVal);
+      if (input !== null) {
+        const parsed = parseInt(input, 10);
+        if (!isNaN(parsed) && parsed >= 0) {
+          writingData[key] = parsed;
+          saveData();
+          if (key === todayKey) {
+            count = parsed;
+            updateToday();
+          }
+          renderCalendar();
+        } else if (input.trim() !== "") {
+          alert("올바른 숫자를 입력해주세요.");
         }
-
-
-        if (amount >= 1000) {
-
-            return (
-                (amount / 1000)
-                .toFixed(1)
-                .replace(".0", "") +
-                "k"
-            );
-
-        }
-
-
-        return amount;
-
+      }
     }
 
-
-    /* ==================================
-       월간 통계
-    ================================== */
-
-    function updateMonthlyStats() {
-
-        let total = 0;
-
-        let goalCount = 0;
-
-
-        const daysInMonth =
-            new Date(
-                calendarYear,
-                calendarMonth + 1,
-                0
-            ).getDate();
-
-
-        for (
-            let day = 1;
-            day <= daysInMonth;
-            day++
-        ) {
-
-            const key =
-                formatDate(
-                    calendarYear,
-                    calendarMonth,
-                    day
-                );
-
-
-            const amount =
-                writingData[key] || 0;
-
-
-            total += amount;
-
-
-            if (amount >= goal) {
-
-                goalCount++;
-
-            }
-
-        }
-
-
-        document
-            .getElementById(
-                "monthlyWords"
-            )
-            .textContent =
-            total.toLocaleString() +
-            "자";
-
-
-        document
-            .getElementById(
-                "goalDays"
-            )
-            .textContent =
-            goalCount +
-            "일";
-
+    function saveData() {
+      localStorage.setItem("writingData", JSON.stringify(writingData));
     }
 
-  /* ==================================
-   오늘 기록 불러오기
-================================== */
+    function toggleSettings() {
+      const settings = document.getElementById("settings");
+      const customizeBtn = document.getElementById("customizeBtn");
+      
+      settings.classList.toggle("open");
+      
+      // 설정창이 열려있으면 버튼 숨기기, 닫혀있으면 버튼 보이기
+      if (settings.classList.contains("open")) {
+        customizeBtn.style.display = "none";
+      } else {
+        customizeBtn.style.display = "block";
+      }
+    }
 
-const todayKey =
-    formatDate(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-    );
+    function setCalendarVisible(visible) {
+      calendarVisible = visible;
+      localStorage.setItem("calendarVisible", visible);
+      document.getElementById("calendarSection").style.display = visible ? "block" : "none";
+      document.getElementById("calendarOn").classList.toggle("selected", visible);
+      document.getElementById("calendarOff").classList.toggle("selected", !visible);
+    }
 
+    function resetSettings() {
+      if (confirm("모든 설정과 데이터를 초기화하시겠습니까?")) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
 
-if (
-    writingData[todayKey] !== undefined
-) {
-
-    count =
-        writingData[todayKey];
-
-} else {
-
-    writingData[todayKey] =
-        count;
-
-    localStorage.setItem(
-        "writingData",
-        JSON.stringify(writingData)
-    );
-
-}
-
-
-/* ==================================
-   시작
-================================== */
-
-updateToday();
-
-renderCalendar();
-
+    // 초기화 실행
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(selectedTheme, customPoint);
+      updateThemeButtons();
+      renderQuickButtons();
+      selectCharacter(selectedCharacter);
+      setCalendarVisible(calendarVisible);
+      updateToday();
+      renderCalendar();
+    });
 </script>
 
 </body>
